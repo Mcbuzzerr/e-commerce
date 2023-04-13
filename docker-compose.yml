@@ -66,3 +66,4 @@ services:
 volumes:
   catalog-db-data:
   cart-db-data:
+  user-db-data:

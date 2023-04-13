@@ -1,11 +1,35 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
 from beanie import init_beanie, PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel
+from decouple import config
+
+from fastapi_jwt_auth import AuthJWT
+from fastapi_jwt_auth.exceptions import AuthJWTException
+
 from models.cartModels import CartIn, Cart, AddressObject
 from models.catalogItemModels import CatalogItemIn, CatalogItem
-from models.userModels import UserIn, User
+from models.userModels import UserIn, User, UserAuth
 
 app = FastAPI()
+
+
+class Settings(BaseModel):
+    authjwt_secret_key: str = config("jwt_secret_key")
+
+
+@AuthJWT.load_config
+def get_config():
+    return Settings()
+
+
+@app.exception_handler(AuthJWTException)
+async def authjwt_exception_handler(request: Request, exc: AuthJWTException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message},
+    )
 
 
 @app.on_event("startup")
@@ -27,35 +51,52 @@ async def startup():
 
 # Hello World
 @app.get("/")
-async def root():
-    return {"message": "Hello World"}
+async def root(Auth: AuthJWT = Depends()):
+    Auth.jwt_optional()
+    current_user = Auth.get_jwt_subject()
+    if current_user is None:
+        return {"message": "Hello World"}
+    return {"message": f"Hello {current_user}"}
 
 
-# Get ALl Carts
+# Get ALl Carts or The Cart of the Current User
 @app.get("/cart", tags=["Get"])
-async def get_all_carts():
+async def get_all_carts(Auth: AuthJWT = Depends()):
     if (await Cart.find_all().to_list()) is None:
-        raise HTTPException(status_code=404, detail="Items not found")
-
-    return await Cart.find_all().to_list()
+        raise HTTPException(status_code=404, detail="Cart not found")
+    Auth.jwt_optional()
+    current_user = Auth.get_jwt_subject()
+    if current_user is None:
+        return await Cart.find_all().to_list()
+    else:
+        user = await User.find_one(User.email == current_user)
+        return await Cart.get(user.cartID)
 
 
 # Get Cart by ID
 @app.get("/cart/{cart_id}", tags=["Get"])
 async def get_cart(cart_id: PydanticObjectId):
     if (await Cart.get(cart_id)) is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
     return await Cart.get(cart_id)
 
 
 # Create Cart
 @app.post("/cart", tags=["Post"])
-async def create_cart(cart_in: CartIn):
+async def create_cart(cart_in: CartIn, Auth: AuthJWT = Depends()):
     totalCost = 0
     for item in cart_in.items:
         totalCost += item.price
 
     new_cart = Cart(**cart_in.dict(), total=totalCost)
+
+    Auth.jwt_optional()
+    current_user = Auth.get_jwt_subject()
+    if current_user is not None:
+        user = await User.find_one(User.email == current_user)
+        user.cartID = new_cart.id
+        await user.save()
+
     return await new_cart.save()
 
 
@@ -63,7 +104,7 @@ async def create_cart(cart_in: CartIn):
 @app.put("/cart/{cart_id}", tags=["Put"])
 async def update_cart(cart_id: PydanticObjectId, cart_in: CartIn):
     if (await Cart.get(cart_id)) is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
 
     cart = await Cart.get(cart_id)
     cart.items = cart_in.items
@@ -80,7 +121,7 @@ async def update_cart(cart_id: PydanticObjectId, cart_in: CartIn):
 @app.delete("/cart/{cart_id}", tags=["Delete"])
 async def delete_cart(cart_id: PydanticObjectId):
     if (await Cart.get(cart_id)) is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
 
     item = await Cart.get(cart_id)
     await item.delete()
@@ -91,7 +132,7 @@ async def delete_cart(cart_id: PydanticObjectId):
 @app.post("/cart/{cart_id}/add", tags=["Post"])
 async def add_item_to_cart(cart_id: PydanticObjectId, item: CatalogItemIn):
     if (await Cart.get(cart_id)) is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
 
     cart = await Cart.get(cart_id)
     cart.items.append(item)
@@ -104,7 +145,7 @@ async def add_item_to_cart(cart_id: PydanticObjectId, item: CatalogItemIn):
 @app.post("/cart/{cart_id}/add/bulk", tags=["Post"])
 async def add_items_to_cart(cart_id: PydanticObjectId, items: list[CatalogItemIn]):
     if (await Cart.get(cart_id)) is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
 
     cart = await Cart.get(cart_id)
     for item in items:
@@ -119,7 +160,7 @@ async def remove_item_from_cart(cart_id: PydanticObjectId, item_index: int):
     cart = await Cart.get(cart_id)
 
     if (cart) is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
     if item_index < 0:
         raise HTTPException(status_code=400, detail="Invalid item index")
     if item_index > len(cart.items):
@@ -139,7 +180,7 @@ async def remove_item_from_cart(cart_id: PydanticObjectId, item_index: int):
 async def apply_coupon_to_cart(cart_id: PydanticObjectId, coupon_code: str):
     cart = await Cart.get(cart_id)
     if (cart) is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
 
     valid_coupons = ["10OFF", "20OFF", "30OFF", "40OFF", "50OFF", "BOGO"]
     if (coupon_code in valid_coupons) is False:
@@ -179,7 +220,7 @@ async def apply_coupon_to_cart(cart_id: PydanticObjectId, coupon_code: str):
 @app.delete("/cart/{cart_id}/coupon", tags=["Delete"])
 async def remove_coupon_from_cart(cart_id: PydanticObjectId):
     if (await Cart.get(cart_id)) is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
 
     cart = await Cart.get(cart_id)
     cart.couponCode = ""
@@ -195,7 +236,7 @@ async def remove_coupon_from_cart(cart_id: PydanticObjectId):
 @app.put("/cart/{cart_id}/shipping", tags=["Put"])
 async def update_shipping_address(cart_id: PydanticObjectId, address: AddressObject):
     if (await Cart.get(cart_id)) is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Cart not found")
 
     cart = await Cart.get(cart_id)
     cart.shippingAddress = address
@@ -204,13 +245,18 @@ async def update_shipping_address(cart_id: PydanticObjectId, address: AddressObj
 
 # Checkout cart
 @app.post("/cart/{cart_id}/checkout", tags=["Post"])
-async def checkout_cart(cart_id: PydanticObjectId):
-    # REQUIRES AUTHENTICATION - Authentication shouldn't need to come from an endpoint, I think we can just pass in the jwt from the user api
-    # Get user from token
-    # Get cart from database by user.cartID
-    # Add cart to user OrderHistory
-    # Delete cart from database
-    # Create new cart for user
-    # Update user.cartID
-    # Return success message
-    pass
+async def checkout_cart(cart_id: PydanticObjectId, Auth: AuthJWT = Depends()):
+    Auth.jwt_required()
+    current_user_email = Auth.get_jwt_subject()
+
+    if (await Cart.get(cart_id)) is None:
+        raise HTTPException(status_code=404, detail="Cart not found")
+
+    cart = await Cart.get(cart_id)
+    user = await User.find_one({"email": current_user_email})
+    user.orderHistory.append(cart)
+    new_cart = await create_cart(CartIn(items=[], shippingAddress=cart.shippingAddress))
+    user.cartID = str(new_cart.id)
+    await cart.delete()
+
+    return await user.save()
