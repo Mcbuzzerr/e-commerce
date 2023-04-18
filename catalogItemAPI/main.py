@@ -2,18 +2,28 @@ from fastapi import FastAPI, Depends, HTTPException
 from beanie import init_beanie, PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from models.catalogItemModels import CatalogItemIn, CatalogItem
+import py_eureka_client.eureka_client as eureka_client
+from contextlib import asynccontextmanager
 
-app = FastAPI()
-# MongoDB
 
-
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def startup(app: FastAPI):
     client = AsyncIOMotorClient("mongodb://root:pass@catalog-db:27017")
     await init_beanie(
         database=client.catalog,
         document_models=[CatalogItem],
     )
+
+    await eureka_client.init_async(
+        eureka_server="http://eureka:8761/eureka",
+        app_name="catalog-api",
+        instance_port=8000,
+    )
+
+    yield
+
+
+app = FastAPI(lifespan=startup)
 
 
 @app.get("/")

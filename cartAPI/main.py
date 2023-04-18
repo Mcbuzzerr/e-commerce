@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 from beanie import init_beanie, PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 from decouple import config
+import py_eureka_client.eureka_client as eureka_client
 
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
@@ -12,7 +14,34 @@ from models.cartModels import CartIn, Cart, AddressObject
 from models.catalogItemModels import CatalogItemIn, CatalogItem
 from models.userModels import UserIn, User, UserAuth
 
-app = FastAPI()
+
+@asynccontextmanager
+async def startup(app: FastAPI):
+    # Cart database
+    client = AsyncIOMotorClient("mongodb://root:pass@cart-db:27017")
+    await init_beanie(
+        database=client.carts,
+        document_models=[Cart, CatalogItem],
+    )
+
+    # User database
+    user_client = AsyncIOMotorClient("mongodb://root:pass@user-db:27017")
+    await init_beanie(
+        database=user_client.users,
+        document_models=[User],
+    )
+
+    await eureka_client.init_async(
+        eureka_server="http://eureka:8761/eureka",
+        app_name="cart-api",
+        instance_port=8000,
+    )
+
+    yield
+    # Shutdown code here
+
+
+app = FastAPI(lifespan=startup)
 
 
 class Settings(BaseModel):
@@ -29,23 +58,6 @@ async def authjwt_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.message},
-    )
-
-
-@app.on_event("startup")
-async def startup():
-    # Cart database
-    client = AsyncIOMotorClient("mongodb://root:pass@cart-db:27017")
-    await init_beanie(
-        database=client.carts,
-        document_models=[Cart, CatalogItem],
-    )
-
-    # User database
-    user_client = AsyncIOMotorClient("mongodb://root:pass@user-db:27017")
-    await init_beanie(
-        database=user_client.users,
-        document_models=[User],
     )
 
 
@@ -79,25 +91,6 @@ async def get_cart(cart_id: PydanticObjectId):
     if (await Cart.get(cart_id)) is None:
         raise HTTPException(status_code=404, detail="Cart not found")
     return await Cart.get(cart_id)
-
-
-# Create Cart
-@app.post("/cart", tags=["Post"])
-async def create_cart(cart_in: CartIn, Auth: AuthJWT = Depends()):
-    totalCost = 0
-    for item in cart_in.items:
-        totalCost += item.price
-
-    new_cart = Cart(**cart_in.dict(), total=totalCost)
-
-    Auth.jwt_optional()
-    current_user = Auth.get_jwt_subject()
-    if current_user is not None:
-        user = await User.find_one(User.email == current_user)
-        user.cartID = new_cart.id
-        await user.save()
-
-    return await new_cart.save()
 
 
 # Update Cart
@@ -260,3 +253,22 @@ async def checkout_cart(cart_id: PydanticObjectId, Auth: AuthJWT = Depends()):
     await cart.delete()
 
     return await user.save()
+
+
+# Create Cart
+@app.post("/cart", tags=["Post"])
+async def create_cart(cart_in: CartIn, Auth: AuthJWT = Depends()):
+    totalCost = 0
+    for item in cart_in.items:
+        totalCost += item.price
+
+    new_cart = Cart(**cart_in.dict(), total=totalCost)
+
+    # Auth.jwt_optional()
+    # current_user = Auth.get_jwt_subject()
+    # if current_user is not None:
+    #     user = await User.find_one(User.email == current_user)
+    #     user.cartID = new_cart.id
+    #     await user.save()
+
+    return await new_cart.save()

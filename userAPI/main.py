@@ -13,7 +13,36 @@ from models.cartModels import CartIn, Cart, AddressObject
 from models.catalogItemModels import CatalogItemIn, CatalogItem
 from models.userModels import UserIn, User, UserAuth
 
-app = FastAPI()
+import py_eureka_client.eureka_client as eureka_client
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def startup(app: FastAPI):
+    # Cart database
+    cart_client = AsyncIOMotorClient("mongodb://root:pass@cart-db:27017")
+    await init_beanie(
+        database=cart_client.carts,
+        document_models=[Cart, CatalogItem],
+    )
+
+    # User database
+    user_client = AsyncIOMotorClient("mongodb://root:pass@user-db:27017")
+    await init_beanie(
+        database=user_client.users,
+        document_models=[User],
+    )
+
+    await eureka_client.init_async(
+        eureka_server="http://eureka:8761/eureka",
+        app_name="user-api",
+        instance_port=8000,
+    )
+
+    yield
+
+
+app = FastAPI(lifespan=startup)
 
 
 class Settings(BaseModel):
@@ -30,23 +59,6 @@ async def authjwt_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.message},
-    )
-
-
-@app.on_event("startup")
-async def startup():
-    # Cart database
-    cart_client = AsyncIOMotorClient("mongodb://root:pass@cart-db:27017")
-    await init_beanie(
-        database=cart_client.carts,
-        document_models=[Cart, CatalogItem],
-    )
-
-    # User database
-    user_client = AsyncIOMotorClient("mongodb://root:pass@user-db:27017")
-    await init_beanie(
-        database=user_client.users,
-        document_models=[User],
     )
 
 
