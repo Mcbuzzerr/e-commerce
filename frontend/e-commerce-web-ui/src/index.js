@@ -1,18 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import GlobalWrapper from './components/globalWrapper';
+import ProductGrid from './components/productGrid';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 const router = createBrowserRouter([
   {
-    path: '/home',
-    element: <App />,
+    path: '/',
+    element: <GlobalWrapper><Home /></GlobalWrapper>,
   },
   {
     path: '/products',
-    element: <div>Products</div>,
+    element: <GlobalWrapper><ProductGrid columns={4} rows={3} filter={true} pagination={true} /></GlobalWrapper>,
   },
   {
     path: '/cart',
@@ -28,11 +31,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <div>Login</div>,
+    element: <GlobalWrapper><Login /></GlobalWrapper>,
   },
   {
     path: '/register',
-    element: <div>Register</div>,
+    element: <GlobalWrapper><Register /></GlobalWrapper>,
   },
   {
     path: '/admin',

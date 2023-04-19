@@ -79,9 +79,14 @@ async def search_catalog_item(price: float):
     return results
 
 
-@app.get("/catalog/page/{page_num}", tags=["Get"])
-async def get_catalog_page(page_num: int):
-    results = await CatalogItem.find_all().skip(page_num * 10).limit(10).to_list()
+@app.get("/catalog/page/{page_num}/{page_length}", tags=["Get"])
+async def get_catalog_page(page_num: int, page_length: int):
+    results = (
+        await CatalogItem.find_all()
+        .skip(page_num * page_length)
+        .limit(page_length)
+        .to_list()
+    )
     if results is None:
         raise HTTPException(status_code=404, detail="No items found")
     return results
