@@ -75,9 +75,11 @@ services:
       - MONGO_INITDB_DATABASE=user
   gateway:
     container_name: gateway
-    image: nginx
+    build: ./dotnet-apigateway-ocelot
     ports:
-      - "80:80"
+      - "5041:80"
+    depends_on:
+      - eureka
   eureka:
     container_name: eureka
     image: steeltoeoss/eureka-server:latest

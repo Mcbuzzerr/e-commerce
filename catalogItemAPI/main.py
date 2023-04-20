@@ -26,12 +26,12 @@ async def startup(app: FastAPI):
 app = FastAPI(lifespan=startup)
 
 
-@app.get("/")
+@app.get("/hello")
 async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/catalog", tags=["Get"])
+@app.get("/get_all", tags=["Get"])
 async def get_catalog():
     results = await CatalogItem.find_all().to_list()
     if (results) is None:
@@ -39,7 +39,7 @@ async def get_catalog():
     return results
 
 
-@app.get("/catalog/{item_id}", tags=["Get"])
+@app.get("/{item_id}", tags=["Get"])
 async def get_catalog_item(item_id: PydanticObjectId):
     results = await CatalogItem.get(item_id)
     if (results) is None:
@@ -47,7 +47,7 @@ async def get_catalog_item(item_id: PydanticObjectId):
     return results
 
 
-@app.get("/catalog/search/{search_term}", tags=["Get"])
+@app.get("/search/{search_term}", tags=["Get"])
 async def search_catalog_item(search_term: str):
     results = await CatalogItem.find(
         {
@@ -62,7 +62,8 @@ async def search_catalog_item(search_term: str):
     return results
 
 
-@app.get("/catalog/search/priceLowerThan/{price}", tags=["Get"])
+# Unnecessary
+@app.get("/search/priceLowerThan/{price}", tags=["Get"])
 async def search_catalog_item(price: float):
     results = await CatalogItem.find({"price": {"$lt": price}}).to_list()
     if results is None:
@@ -70,7 +71,7 @@ async def search_catalog_item(price: float):
     return results
 
 
-@app.get("/catalog/page/{page_num}/{page_length}", tags=["Get"])
+@app.get("/page/{page_num}/{page_length}", tags=["Get"])
 async def get_catalog_page(page_num: int, page_length: int):
     results = (
         await CatalogItem.find_all()
@@ -83,12 +84,12 @@ async def get_catalog_page(page_num: int, page_length: int):
     return results
 
 
-@app.post("/catalog", tags=["Post"])
+@app.post("/create", tags=["Post"])
 async def create_catalog_item(item: CatalogItemIn):
     return await CatalogItem(**item.dict()).save()
 
 
-@app.post("/catalog/bulk", tags=["Post"])
+@app.post("/bulk", tags=["Post"])
 async def create_catalog_item_bulk(items: list[CatalogItemIn]):
     added_items = 0
     for item in items:
@@ -98,7 +99,7 @@ async def create_catalog_item_bulk(items: list[CatalogItemIn]):
     return {"message": f"{added_items} items added"}
 
 
-@app.put("/catalog/{item_id}", tags=["Put"])
+@app.put("/{item_id}", tags=["Put"])
 async def update_catalog_item(item_id: PydanticObjectId, item_in: CatalogItemIn):
     if (await CatalogItem.get(item_id)) is None:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -110,7 +111,7 @@ async def update_catalog_item(item_id: PydanticObjectId, item_in: CatalogItemIn)
     return await item.save()
 
 
-@app.delete("/catalog/bulk", tags=["Delete"])
+@app.delete("/bulk", tags=["Delete"])
 async def delete_catalog_item_bulk(item_ids: list[PydanticObjectId]):
     deleted_items = 0
     for item_id in item_ids:
@@ -120,7 +121,7 @@ async def delete_catalog_item_bulk(item_ids: list[PydanticObjectId]):
     return {"message": f"{deleted_items} items deleted"}
 
 
-@app.delete("/catalog/{item_id}", tags=["Delete"])
+@app.delete("/{item_id}", tags=["Delete"])
 async def delete_catalog_item(item_id: PydanticObjectId):
     if (await CatalogItem.get(item_id)) is None:
         raise HTTPException(status_code=404, detail="Item not found")

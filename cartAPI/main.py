@@ -62,7 +62,7 @@ async def authjwt_exception_handler(request: Request, exc: AuthJWTException):
 
 
 # Hello World
-@app.get("/")
+@app.get("/hello")
 async def root(Auth: AuthJWT = Depends()):
     Auth.jwt_optional()
     current_user = Auth.get_jwt_subject()
@@ -72,7 +72,7 @@ async def root(Auth: AuthJWT = Depends()):
 
 
 # Get ALl Carts or The Cart of the Current User
-@app.get("/cart", tags=["Get"])
+@app.get("/get_all", tags=["Get"])
 async def get_all_carts(Auth: AuthJWT = Depends()):
     if (await Cart.find_all().to_list()) is None:
         raise HTTPException(status_code=404, detail="Cart not found")
@@ -86,7 +86,7 @@ async def get_all_carts(Auth: AuthJWT = Depends()):
 
 
 # Get Cart by ID
-@app.get("/cart/{cart_id}", tags=["Get"])
+@app.get("/{cart_id}", tags=["Get"])
 async def get_cart(cart_id: PydanticObjectId):
     if (await Cart.get(cart_id)) is None:
         raise HTTPException(status_code=404, detail="Cart not found")
@@ -94,7 +94,7 @@ async def get_cart(cart_id: PydanticObjectId):
 
 
 # Update Cart
-@app.put("/cart/{cart_id}", tags=["Put"])
+@app.put("/{cart_id}", tags=["Put"])
 async def update_cart(cart_id: PydanticObjectId, cart_in: CartIn):
     if (await Cart.get(cart_id)) is None:
         raise HTTPException(status_code=404, detail="Cart not found")
@@ -111,7 +111,7 @@ async def update_cart(cart_id: PydanticObjectId, cart_in: CartIn):
 
 
 # Delete Cart
-@app.delete("/cart/{cart_id}", tags=["Delete"])
+@app.delete("/{cart_id}", tags=["Delete"])
 async def delete_cart(cart_id: PydanticObjectId):
     if (await Cart.get(cart_id)) is None:
         raise HTTPException(status_code=404, detail="Cart not found")
@@ -122,7 +122,7 @@ async def delete_cart(cart_id: PydanticObjectId):
 
 
 # Add item to cart
-@app.post("/cart/{cart_id}/add", tags=["Post"])
+@app.post("/{cart_id}/item/add", tags=["Post"])
 async def add_item_to_cart(cart_id: PydanticObjectId, item: CatalogItemIn):
     if (await Cart.get(cart_id)) is None:
         raise HTTPException(status_code=404, detail="Cart not found")
@@ -135,7 +135,7 @@ async def add_item_to_cart(cart_id: PydanticObjectId, item: CatalogItemIn):
 
 
 # Add multiple items to cart
-@app.post("/cart/{cart_id}/add/bulk", tags=["Post"])
+@app.post("/{cart_id}/item/add_bulk", tags=["Post"])
 async def add_items_to_cart(cart_id: PydanticObjectId, items: list[CatalogItemIn]):
     if (await Cart.get(cart_id)) is None:
         raise HTTPException(status_code=404, detail="Cart not found")
@@ -148,7 +148,7 @@ async def add_items_to_cart(cart_id: PydanticObjectId, items: list[CatalogItemIn
 
 
 # Remove item from cart
-@app.delete("/cart/{cart_id}/remove/{item_index}", tags=["Delete"])
+@app.delete("/{cart_id}/item/remove/{item_index}", tags=["Delete"])
 async def remove_item_from_cart(cart_id: PydanticObjectId, item_index: int):
     cart = await Cart.get(cart_id)
 
@@ -169,7 +169,7 @@ async def remove_item_from_cart(cart_id: PydanticObjectId, item_index: int):
 
 
 # Apply coupon code to cart
-@app.post("/cart/{cart_id}/coupon/{coupon_code}", tags=["Post"])
+@app.post("/{cart_id}/coupon/{coupon_code}", tags=["Post"])
 async def apply_coupon_to_cart(cart_id: PydanticObjectId, coupon_code: str):
     cart = await Cart.get(cart_id)
     if (cart) is None:
@@ -210,7 +210,7 @@ async def apply_coupon_to_cart(cart_id: PydanticObjectId, coupon_code: str):
 
 
 # Remove coupon code from cart
-@app.delete("/cart/{cart_id}/coupon", tags=["Delete"])
+@app.delete("/{cart_id}/coupon", tags=["Delete"])
 async def remove_coupon_from_cart(cart_id: PydanticObjectId):
     if (await Cart.get(cart_id)) is None:
         raise HTTPException(status_code=404, detail="Cart not found")
@@ -226,7 +226,7 @@ async def remove_coupon_from_cart(cart_id: PydanticObjectId):
 
 
 # Update shipping address
-@app.put("/cart/{cart_id}/shipping", tags=["Put"])
+@app.put("/{cart_id}/shipping", tags=["Put"])
 async def update_shipping_address(cart_id: PydanticObjectId, address: AddressObject):
     if (await Cart.get(cart_id)) is None:
         raise HTTPException(status_code=404, detail="Cart not found")
@@ -237,7 +237,7 @@ async def update_shipping_address(cart_id: PydanticObjectId, address: AddressObj
 
 
 # Checkout cart
-@app.post("/cart/{cart_id}/checkout", tags=["Post"])
+@app.post("/{cart_id}/checkout", tags=["Post"])
 async def checkout_cart(cart_id: PydanticObjectId, Auth: AuthJWT = Depends()):
     Auth.jwt_required()
     current_user_email = Auth.get_jwt_subject()
@@ -256,7 +256,7 @@ async def checkout_cart(cart_id: PydanticObjectId, Auth: AuthJWT = Depends()):
 
 
 # Create Cart
-@app.post("/cart", tags=["Post"])
+@app.post("/create", tags=["Post"])
 async def create_cart(cart_in: CartIn, Auth: AuthJWT = Depends()):
     totalCost = 0
     for item in cart_in.items:

@@ -3,6 +3,32 @@ import { Link } from 'react-router-dom'
 import './css/globalWrapper.css'
 
 const GlobalWrapper = (props) => {
+    const [user, setUser] = React.useState(null)
+    const [token, setToken] = React.useState(null)
+
+    // UNFINISHED, FOLLOW THE PLAN LAID OUT IN CHATGPT
+    // Refactor index.js to be a functional component called app
+    // Give app a state variable called user
+    // Upon login or logout, update the user state variable
+    // If user is null, display the login and register links
+    // If user is not null, display the cart, profile, and logout links
+
+    React.useEffect(() => {
+        let user = localStorage.getItem('user')
+        let token = localStorage.getItem('token')
+        if (user && token) {
+            setUser(JSON.parse(user))
+            setToken(token)
+        }
+    }, [])
+
+    const handleLogout = () => {
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
+        setUser(null)
+        setToken(null)
+    }
+
     return (<>
         <nav className='navbar'>
             <Link to="/"><h1>H</h1></Link>
@@ -10,11 +36,17 @@ const GlobalWrapper = (props) => {
                 <li className='nav-item'><Link to="/products">Products</Link></li>
             </ul>
             <ul className='top-menu'>
-                <li className='nav-item'><Link to="/login">Login</Link></li>
-                <li className='nav-item'><Link to="/register">Register</Link></li>
-                {/* Only display the following when user is logged in */}
-                {/* <li className='nav-item'><Link to="/cart">Cart</Link></li>
-                <li className='nav-item'><Link to="/profile">Profile</Link></li> */}
+
+                {user && token ? (
+                    <>
+                        <li className='nav-item'><Link to="/cart">Cart</Link></li>
+                        <li className='nav-item'><Link to="/profile">Profile</Link></li>
+                        <li className='nav-item'><Link onClick={handleLogout}>Logout</Link></li>
+                    </>
+                ) : (<>
+                    <li className='nav-item'><Link to="/login">Login</Link></li>
+                    <li className='nav-item'><Link to="/register">Register</Link></li>
+                </>)}
                 {/* Only display the following when the user is an admin */}
                 {/* <li className='nav-item'><Link to="/admin">Admin</Link></li> */}
             </ul>

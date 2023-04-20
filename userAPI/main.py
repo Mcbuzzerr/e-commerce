@@ -63,7 +63,7 @@ async def authjwt_exception_handler(request: Request, exc: AuthJWTException):
 
 
 # Hello World
-@app.get("/")
+@app.get("/hello")
 async def root(Authorize: AuthJWT = Depends()):
     Authorize.jwt_optional()
     current_user = Authorize.get_jwt_subject()
@@ -73,7 +73,7 @@ async def root(Authorize: AuthJWT = Depends()):
 
 
 # Get ALL Users
-@app.get("/user", tags=["Get"])
+@app.get("/get_all", tags=["Get"])
 async def get_all_users():
     users = await User.find_all().to_list()
     if (users) is None:
@@ -87,7 +87,7 @@ async def get_all_users():
 
 
 # Get User by ID
-@app.get("/user/{user_id}", tags=["Get"])
+@app.get("/{user_id}", tags=["Get"])
 async def get_user(user_id: PydanticObjectId):
     if (await User.get(user_id)) is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -95,14 +95,14 @@ async def get_user(user_id: PydanticObjectId):
 
 
 # Create User
-@app.post("/user", tags=["Post"])
+@app.post("/create", tags=["Post"])
 async def create_user(user_in: UserIn):
     new_user = User(**user_in.dict())
     return await new_user.save()
 
 
 # Delete User
-@app.delete("/user/{user_id}", tags=["Delete"])
+@app.delete("/{user_id}", tags=["Delete"])
 async def delete_user(user_id: PydanticObjectId):
     user = await User.get(user_id)
     if user is None:
@@ -113,7 +113,7 @@ async def delete_user(user_id: PydanticObjectId):
 
 
 # Update User
-@app.put("/user/{user_id}", tags=["Put"])
+@app.put("/{user_id}", tags=["Put"])
 async def update_user(user_id: PydanticObjectId, user_in: UserIn):
     user = await User.get(user_id)
     if user is None:
@@ -127,7 +127,7 @@ async def update_user(user_id: PydanticObjectId, user_in: UserIn):
 
 
 # Authenticate User
-@app.post("/user/authenticate", tags=["Post"])
+@app.post("/authenticate", tags=["Post"])
 async def authenticate_user(user_in: UserAuth, Authorize: AuthJWT = Depends()):
     # https://indominusbyte.github.io/fastapi-jwt-auth/
     # This is JWT authentication for FastAPI
@@ -141,4 +141,7 @@ async def authenticate_user(user_in: UserAuth, Authorize: AuthJWT = Depends()):
     access_token = Authorize.create_access_token(
         subject=user.email, expires_time=expires_time
     )
-    return {"access_token": access_token}
+    return {
+        "access_token": access_token,
+        "user": {"email": user.email, "name": user.name},
+    }
