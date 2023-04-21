@@ -16,7 +16,7 @@ class AddressObject(BaseModel):
 class CartIn(BaseModel):
     items: list[CatalogItem]
     # couponCode Planned as a list, but usually you can only have 1 coupon code per order in a store.
-    couponCode: Optional[str]
+    couponCode: Optional[str] = ""
     shippingAddress: AddressObject
 
 

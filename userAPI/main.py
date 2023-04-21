@@ -123,6 +123,7 @@ async def update_user(user_id: PydanticObjectId, user_in: UserIn):
     user.password = user_in.password
     user.cartID = user_in.cartID
     user.orderHistory = user_in.orderHistory
+    user.isDeleted = user_in.isDeleted
     return await user.save()
 
 

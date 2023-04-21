@@ -14,8 +14,8 @@ class UserIn(UserAuth):
     name: str
     cartID: Optional[str | PydanticObjectId]
     orderHistory: list[Cart] = []
+    isDeleted: bool = False
 
 
 class User(Document, UserIn):
     id: PydanticObjectId = Field(default_factory=PydanticObjectId)
-    isDeleted: bool = False

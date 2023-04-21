@@ -85,6 +85,25 @@ async def get_all_carts(Auth: AuthJWT = Depends()):
         return await Cart.get(user.cartID)
 
 
+# Create Cart
+@app.post("/create", tags=["Post"])
+async def create_cart(cart_in: CartIn, Auth: AuthJWT = Depends()):
+    totalCost = 0
+    for item in cart_in.items:
+        totalCost += item.price
+
+    new_cart = Cart(**cart_in.dict(), total=totalCost)
+
+    # Auth.jwt_optional()
+    # current_user = Auth.get_jwt_subject()
+    # if current_user is not None:
+    #     user = await User.find_one(User.email == current_user)
+    #     user.cartID = new_cart.id
+    #     await user.save()
+
+    return await new_cart.save()
+
+
 # Get Cart by ID
 @app.get("/{cart_id}", tags=["Get"])
 async def get_cart(cart_id: PydanticObjectId):
@@ -253,22 +272,3 @@ async def checkout_cart(cart_id: PydanticObjectId, Auth: AuthJWT = Depends()):
     await cart.delete()
 
     return await user.save()
-
-
-# Create Cart
-@app.post("/create", tags=["Post"])
-async def create_cart(cart_in: CartIn, Auth: AuthJWT = Depends()):
-    totalCost = 0
-    for item in cart_in.items:
-        totalCost += item.price
-
-    new_cart = Cart(**cart_in.dict(), total=totalCost)
-
-    # Auth.jwt_optional()
-    # current_user = Auth.get_jwt_subject()
-    # if current_user is not None:
-    #     user = await User.find_one(User.email == current_user)
-    #     user.cartID = new_cart.id
-    #     await user.save()
-
-    return await new_cart.save()

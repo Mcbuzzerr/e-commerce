@@ -89,7 +89,7 @@ async def create_catalog_item(item: CatalogItemIn):
     return await CatalogItem(**item.dict()).save()
 
 
-@app.post("/bulk", tags=["Post"])
+@app.post("/create_bulk", tags=["Post"])
 async def create_catalog_item_bulk(items: list[CatalogItemIn]):
     added_items = 0
     for item in items:
