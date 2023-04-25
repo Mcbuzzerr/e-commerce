@@ -141,6 +141,8 @@ async def authenticate_user(user_in: UserAuth, Authorize: AuthJWT = Depends()):
         raise HTTPException(status_code=404, detail="User not found")
     if user.password != user_in.password:
         raise HTTPException(status_code=401, detail="Incorrect password")
+    if user.isDeleted:
+        raise HTTPException(status_code=401, detail="User is deleted")
     expires_time = timedelta(days=3)
     access_token = Authorize.create_access_token(
         subject=user.email, expires_time=expires_time

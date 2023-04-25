@@ -3,11 +3,12 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import GlobalWrapper from './components/globalWrapper';
 import ProductGrid from './components/productGrid';
-import SecuredRoute from './components/securedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
+import Cart from './pages/Cart';
+import Orders from './pages/Orders';
 import reportWebVitals from './reportWebVitals';
 
 
@@ -41,11 +42,9 @@ const App = (props) => {
           <Routes>
             <Route exact path="/" Component={() => <Home />} />
             <Route exact path="/products" Component={() => <ProductGrid columns={4} rows={3} filter={true} pagination={true} />} />
-            <Route exact path="/cart" Component={() => <div>Cart</div>} />
-            {/* <Route path="/profile" element={<SecuredRoute isLoggedIn={loggedIn} />}>
-            </Route> */}
+            <Route exact path="/cart" Component={() => <Cart />} />
             <Route exact path="/profile" Component={() => <Profile />} />
-            <Route exact path="/profile/orders" Component={() => <div>Orders</div>} />
+            <Route exact path="/profile/orders" Component={() => <Orders />} />
             <Route exact path="/login" Component={() => <Login handleLogin={handleLogin} />} />
             <Route exact path="/register" Component={Register} />
             <Route exact path="/admin" Component={() => <div>Admin</div>} />

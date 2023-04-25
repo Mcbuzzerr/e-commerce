@@ -126,6 +126,30 @@ async def update_cart(cart_id: PydanticObjectId, cart_in: CartIn):
     for item in cart.items:
         cart.total += item.price
 
+    match cart.couponCode:
+        case "":
+            pass
+        case "10OFF":
+            cart.total = cart.total * 0.9
+        case "20OFF":
+            cart.total = cart.total * 0.8
+        case "30OFF":
+            cart.total = cart.total * 0.7
+        case "40OFF":
+            cart.total = cart.total * 0.6
+        case "50OFF":
+            cart.total = cart.total * 0.5
+        case "BOGO":
+            if len(cart.items) > 1:
+                cart.total -= cart.items[0].price
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Not enough items in cart to apply BOGO coupon",
+                )
+        case _:
+            raise HTTPException(status_code=400, detail="Invalid coupon code")
+
     return await cart.save()
 
 
@@ -148,7 +172,34 @@ async def add_item_to_cart(cart_id: PydanticObjectId, item: CatalogItemIn):
 
     cart = await Cart.get(cart_id)
     cart.items.append(item)
-    cart.total += item.price
+
+    cart.total = 0
+    for item in cart.items:
+        cart.total += item.price
+
+    match cart.couponCode:
+        case "":
+            pass
+        case "10OFF":
+            cart.total = cart.total * 0.9
+        case "20OFF":
+            cart.total = cart.total * 0.8
+        case "30OFF":
+            cart.total = cart.total * 0.7
+        case "40OFF":
+            cart.total = cart.total * 0.6
+        case "50OFF":
+            cart.total = cart.total * 0.5
+        case "BOGO":
+            if len(cart.items) > 1:
+                cart.total -= cart.items[0].price
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Not enough items in cart to apply BOGO coupon",
+                )
+        case _:
+            raise HTTPException(status_code=400, detail="Invalid coupon code")
 
     return await cart.save()
 
@@ -162,7 +213,35 @@ async def add_items_to_cart(cart_id: PydanticObjectId, items: list[CatalogItemIn
     cart = await Cart.get(cart_id)
     for item in items:
         cart.items.append(item)
+
+    cart.total = 0
+    for item in cart.items:
         cart.total += item.price
+
+    match cart.couponCode:
+        case "":
+            pass
+        case "10OFF":
+            cart.total = cart.total * 0.9
+        case "20OFF":
+            cart.total = cart.total * 0.8
+        case "30OFF":
+            cart.total = cart.total * 0.7
+        case "40OFF":
+            cart.total = cart.total * 0.6
+        case "50OFF":
+            cart.total = cart.total * 0.5
+        case "BOGO":
+            if len(cart.items) > 1:
+                cart.total -= cart.items[0].price
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Not enough items in cart to apply BOGO coupon",
+                )
+        case _:
+            raise HTTPException(status_code=400, detail="Invalid coupon code")
+
     return await cart.save()
 
 
@@ -183,6 +262,30 @@ async def remove_item_from_cart(cart_id: PydanticObjectId, item_index: int):
     cart.total = 0
     for item in cart.items:
         cart.total += item.price
+
+    match cart.couponCode:
+        case "":
+            pass
+        case "10OFF":
+            cart.total = cart.total * 0.9
+        case "20OFF":
+            cart.total = cart.total * 0.8
+        case "30OFF":
+            cart.total = cart.total * 0.7
+        case "40OFF":
+            cart.total = cart.total * 0.6
+        case "50OFF":
+            cart.total = cart.total * 0.5
+        case "BOGO":
+            if len(cart.items) > 1:
+                cart.total -= cart.items[0].price
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Not enough items in cart to apply BOGO coupon",
+                )
+        case _:
+            raise HTTPException(status_code=400, detail="Invalid coupon code")
 
     return await cart.save()
 

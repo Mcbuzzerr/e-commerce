@@ -3,7 +3,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #FF6663;
+    /* background-color: #FF6663; */
     color: #020202;
 }
 
@@ -73,20 +73,26 @@
 .product-arrows {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-evenly;
     align-items: center;
     width: calc(100% - 2rem);
     padding: 0 1rem;
     height: 4rem;
-    background-color: #4411aa;
+    /* background-color: #fff; */
 }
 
 .product-arrow {
     width: 2rem;
     height: 2rem;
-    background-color: #6622cc;
-    border-bottom: white solid 0.5rem;
-    border-right: white solid 0.5rem;
+    /* background-color: #6622cc; */
+    border-bottom: #4411aa solid 0.5rem;
+    border-right: #4411aa solid 0.5rem;
+}
+
+.page-indicator {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
 }
 
 .product-arrow.right {

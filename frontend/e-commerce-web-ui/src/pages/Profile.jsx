@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import './css/Profile.css'
 
 const Profile = (props) => {
-    let user = JSON.parse(localStorage.getItem('user'))
+    // Use this bit of code to redirect the user to the login page if they are not logged in
+    let user = localStorage.getItem('user')
+    user = JSON.parse(user)
     let token = localStorage.getItem('token')
 
     if (!token || !user) {
-        props.history.push('/login')
+        window.location.href = '/login'
     }
+    // End of redirect code
 
     let history = useNavigate()
 
@@ -37,8 +40,8 @@ const Profile = (props) => {
         e.preventDefault()
         console.log('Profile')
 
-        if (formPassword !== formConfirmPassword) {
-            alert('Passwords do not match')
+        if (formPassword !== formConfirmPassword || formPassword === '' || formConfirmPassword === '') {
+            alert('Passwords do not match or are empty')
             return
         }
 
@@ -54,7 +57,7 @@ const Profile = (props) => {
                 name: formName
             })
         }
-        let response = fetch(`http://localhost:5041/user/${user._id}`, props)
+        let response = fetch(`http://localhost:5041/user/${user.id}`, props)
             .then((response) => {
                 return response.json()
             })
@@ -66,6 +69,27 @@ const Profile = (props) => {
                 } else {
                     alert('Profile update failed')
                 }
+            })
+    }
+
+    const handleDeleteAccount = (e) => {
+
+        let props = {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }
+        let response = fetch(`http://localhost:5041/user/${user.id}`, props)
+            .then((response) => {
+                return response.json()
+            })
+            .then((data) => {
+                console.log(data)
+                alert(data.message)
+                localStorage.removeItem('user')
+                localStorage.removeItem('token')
+                window.location.href = '/login'
             })
     }
 
@@ -112,19 +136,20 @@ const Profile = (props) => {
             <input type="text" value={formName} onChange={handleFormNameChange} />
         </Bubble>
         <Bubble
-            className='center-bubble-contents profile-change-submit'
+            className='center-bubble-contents button-hover-active'
             onClick={handleSubmit}
             style={{
                 width: '100px',
                 gridColumn: '3',
                 gridRow: '3',
                 marginLeft: '50px',
-                backgroundColor: '#077f19'
+                backgroundColor: '#077f19',
+                userSelect: 'none',
             }}>
             <p style={{ margin: "0" }}>Submit</p>
         </Bubble>
         <Bubble
-            className='center-bubble-contents orders-link'
+            className='center-bubble-contents button-hover-active'
             onClick={() => { history('/profile/orders') }}
             style={{
                 width: '100px',
@@ -138,6 +163,19 @@ const Profile = (props) => {
             }}
         >
             <p style={{ margin: "0" }}>Orders</p>
+        </Bubble>
+        <Bubble
+            className='center-bubble-contents button-hover-active'
+            style={{
+                width: '100px',
+                gridColumn: '1',
+                gridRow: '4',
+                backgroundColor: '#a90303',
+                userSelect: 'none',
+            }}
+            onClick={handleDeleteAccount}
+        >
+            <p style={{ margin: "0" }}>Delete</p>
         </Bubble>
     </div>)
 }

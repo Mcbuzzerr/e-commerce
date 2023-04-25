@@ -1,7 +1,7 @@
 .bubble-background {
     background-color: rgb(0, 76, 255);
     border-radius: 50%;
-    border: 3px solid #12203a;
+    /* border: 3px solid #12203a; */
     min-width: 100px;
     min-height: 100px;
     aspect-ratio: 1/1;
@@ -21,7 +21,7 @@
 }
 
 .profile-grid {
-    background-color: #0c337b;
+    /* background-color: #0c337b; */
     height: calc(100vh - 14rem);
     display: grid;
     grid-template-columns: repeat(4, calc(((100vw - 2 * (5rem)) / 4) - 3px));
@@ -30,14 +30,10 @@
     padding: 1rem 5rem;
 }
 
-.profile-change-submit {
-    user-select: none;
-}
-
-.profile-change-submit:hover {
+.button-hover-active:hover {
     filter: brightness(1.2);
 }
 
-.profile-change-submit:active {
+.button-hover-active:active {
     filter: brightness(0.8);
 }

@@ -29,7 +29,7 @@ const Login = ({ handleLogin }) => {
                 console.log(data)
                 if (data.access_token) {
                     localStorage.setItem('token', data.access_token)
-                    localStorage.setItem('user', JSON.stringify(data.user))
+                    localStorage.setItem('user', data.user)
                     handleLogin()
                 } else {
                     alert('Invalid credentials')

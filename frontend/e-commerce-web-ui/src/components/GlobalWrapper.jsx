@@ -1,6 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import './css/globalWrapper.css'
+import jwt_decode from 'jwt-decode'
+
 
 const GlobalWrapper = ({ loggedIn, handleLogout, children }) => {
 
@@ -11,6 +13,20 @@ const GlobalWrapper = ({ loggedIn, handleLogout, children }) => {
     // If user is null, display the login and register links
     // If user is not null, display the cart, profile, and logout links
 
+    React.useEffect(() => {
+        console.log('GlobalWrapper mounted')
+        if (localStorage.getItem('token')) {
+            const decoded = jwt_decode(localStorage.getItem('token'))
+            if (Date.now() >= decoded.exp * 1000) {
+                console.log('token expired')
+                handleLogout()
+            } else {
+                console.log('token not expired')
+            }
+        } else {
+            console.log('no token')
+        }
+    }, [])
 
     return (<>
         <nav className='navbar'>
