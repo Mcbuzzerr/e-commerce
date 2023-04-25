@@ -1,7 +1,7 @@
 version: '3'
 services:
   catalog-api:
-    container_name: catalog-api
+    # container_name: catalog-api
     build: ./catalogItemAPI
     # ports:
     #   - "8000:8000"
@@ -10,8 +10,11 @@ services:
     depends_on:
       - catalog-db
       - eureka
+    deploy:
+      mode: replicated
+      replicas: 3
   catalog-storefront-api:
-    container_name: catalog-storefront-api
+    # container_name: catalog-storefront-api
     build: ./catalogStorefrontAPI
     # ports:
     #   - "8001:8000"
@@ -20,6 +23,9 @@ services:
     depends_on:
       - catalog-db
       - eureka
+    deploy:
+      mode: replicated
+      replicas: 3
   catalog-db:
     container_name: catalog-db
     image: mongo
@@ -32,7 +38,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=pass
       - MONGO_INITDB_DATABASE=catalog
   cart-api:
-    container_name: cart-api
+    # container_name: cart-api
     build: ./cartAPI
     # ports:
     #   - "8002:8000"
@@ -41,8 +47,11 @@ services:
     depends_on:
       - cart-db
       - eureka
+    deploy:
+      mode: replicated
+      replicas: 3
   cart-db:
-    container_name: cart-db
+    # container_name: cart-db
     image: mongo
     # ports:
     #   - "27018:27017"
@@ -53,7 +62,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=pass
       - MONGO_INITDB_DATABASE=cart
   user-api:
-    container_name: user-api
+    # container_name: user-api
     build: ./userAPI
     # ports:
     #   - "8003:8000"
@@ -62,6 +71,9 @@ services:
     depends_on:
       - user-db
       - eureka
+    deploy:
+      mode: replicated
+      replicas: 3
   user-db:
     container_name: user-db
     image: mongo

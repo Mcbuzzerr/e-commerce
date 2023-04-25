@@ -114,7 +114,10 @@ async def delete_user(user_id: PydanticObjectId):
 
 # Update User
 @app.put("/{user_id}", tags=["Put"])
-async def update_user(user_id: PydanticObjectId, user_in: UserIn):
+async def update_user(
+    user_id: PydanticObjectId, user_in: UserIn, Authorize: AuthJWT = Depends()
+):
+    Authorize.jwt_required()
     user = await User.get(user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -144,5 +147,5 @@ async def authenticate_user(user_in: UserAuth, Authorize: AuthJWT = Depends()):
     )
     return {
         "access_token": access_token,
-        "user": {"email": user.email, "name": user.name},
+        "user": user.json(),
     }

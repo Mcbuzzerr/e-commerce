@@ -2,9 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import './css/globalWrapper.css'
 
-const GlobalWrapper = (props) => {
-    const [user, setUser] = React.useState(null)
-    const [token, setToken] = React.useState(null)
+const GlobalWrapper = ({ loggedIn, handleLogout, children }) => {
 
     // UNFINISHED, FOLLOW THE PLAN LAID OUT IN CHATGPT
     // Refactor index.js to be a functional component called app
@@ -13,21 +11,6 @@ const GlobalWrapper = (props) => {
     // If user is null, display the login and register links
     // If user is not null, display the cart, profile, and logout links
 
-    React.useEffect(() => {
-        let user = localStorage.getItem('user')
-        let token = localStorage.getItem('token')
-        if (user && token) {
-            setUser(JSON.parse(user))
-            setToken(token)
-        }
-    }, [])
-
-    const handleLogout = () => {
-        localStorage.removeItem('user')
-        localStorage.removeItem('token')
-        setUser(null)
-        setToken(null)
-    }
 
     return (<>
         <nav className='navbar'>
@@ -37,7 +20,7 @@ const GlobalWrapper = (props) => {
             </ul>
             <ul className='top-menu'>
 
-                {user && token ? (
+                {loggedIn ? (
                     <>
                         <li className='nav-item'><Link to="/cart">Cart</Link></li>
                         <li className='nav-item'><Link to="/profile">Profile</Link></li>
@@ -52,7 +35,7 @@ const GlobalWrapper = (props) => {
             </ul>
         </nav>
         <div className='main-body'>
-            {props.children}
+            {children}
         </div>
         <footer>
             <h1 className='lobster-font'>H</h1>

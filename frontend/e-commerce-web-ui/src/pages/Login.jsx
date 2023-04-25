@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import './css/Login.css'
 
-const Login = (props) => {
+const Login = ({ handleLogin }) => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const history = useNavigate()
 
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -31,7 +30,9 @@ const Login = (props) => {
                 if (data.access_token) {
                     localStorage.setItem('token', data.access_token)
                     localStorage.setItem('user', JSON.stringify(data.user))
-                    history('/')
+                    handleLogin()
+                } else {
+                    alert('Invalid credentials')
                 }
             })
     }
