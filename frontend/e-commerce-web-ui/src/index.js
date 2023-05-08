@@ -48,7 +48,7 @@ const App = (props) => {
             <Route exact path="/login" Component={() => <Login handleLogin={handleLogin} />} />
             <Route exact path="/register" Component={Register} />
             <Route exact path="/admin" Component={() => <div>Admin</div>} />
-            <Route path="*" Component={() => <div>404</div>} />
+            <Route path="*" Component={() => <h1>404 - Page not Found</h1>} />
           </Routes>
         </GlobalWrapper>
       </BrowserRouter>

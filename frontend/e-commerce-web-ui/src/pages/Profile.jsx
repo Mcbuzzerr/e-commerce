@@ -110,7 +110,7 @@ const Profile = (props) => {
                 gridColumn: '2',
                 gridRow: '3',
             }}>
-            <p>Password Reset: </p>
+            <p>Password: </p>
             <input type="password" value={formPassword} onChange={handleFormPasswordChange} />
             <p>Confirm Password: </p>
             <input type="text" value={formConfirmPassword} onChange={handleFormConfirmPasswordChange} />

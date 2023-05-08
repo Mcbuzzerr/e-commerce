@@ -61,7 +61,7 @@ const Register = (props) => {
                 />
                 <input type="submit" value="Register" onClick={handleSubmit} />
             </form>
-            <p>Already have an account? <Link to="/login">Login</Link></p>
+            <p>Already have an account? <Link to="/login" className='login'>Login</Link></p>
         </div>
     </div>)
 }

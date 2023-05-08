@@ -110,14 +110,20 @@ const ProductGrid = (props) => {
             </div>
             {pagination && (
                 <div className='product-arrows'>
-                    <div className='product-arrow left' onClick={() => handlePageChange(-1)}>
+                    <div className='product-arrow-container' onClick={() => handlePageChange(-1)}>
+
+                        <i className="fi fi-rr-caret-left product-arrow"></i>
+
                     </div>
+
 
                     <div className='page-indicator'>
                         <p>Page {currentPage + 1} of {pageCount}</p>
                     </div>
 
-                    <div className='product-arrow right' onClick={() => handlePageChange(1)}>
+                    <div className='product-arrow-container' onClick={() => handlePageChange(1)}>
+                        <i className="fi fi-rr-caret-right product-arrow"></i>
+
                     </div>
                 </div>
             )}

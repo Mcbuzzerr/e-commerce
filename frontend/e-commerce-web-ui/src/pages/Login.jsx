@@ -57,7 +57,7 @@ const Login = ({ handleLogin }) => {
                 />
                 <input type="submit" value="Login" onClick={handleSubmit} />
             </form>
-            <p>Don't have an account? <Link to="/register">Register</Link></p>
+            <p>Don't have an account? <Link to="/register" className='register'>Register</Link></p>
         </div>
     </div>)
 }
